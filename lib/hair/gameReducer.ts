@@ -48,14 +48,12 @@ function scoresFor(state: Pick<GameState, "currentLevelIndex" | "currentHairStat
 
 function parserModeNotice(mode: ParserMode): string {
   switch (mode) {
-    case "local":
-      return "本地解析模式：不调用服务端智能解析。";
     case "codex":
-      return "Codex CLI 模式：通过本机 Codex CLI 解析，失败时回退本地解析。";
+      return "Codex CLI 模式：通过本机 Codex CLI 解析；失败时不使用本地规则猜测。";
     case "ai":
-      return "API 解析模式：通过 OpenAI API 解析，失败时回退本地解析。";
+      return "API 解析模式：通过 OpenAI API 解析；失败时不使用本地规则猜测。";
     default:
-      return "自动模式：优先使用本机 Codex CLI，其次使用 API，最后回退本地解析。";
+      return "自动模式：优先使用本机 Codex CLI，其次使用 API；失败时不使用本地规则猜测。";
   }
 }
 

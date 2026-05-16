@@ -37,7 +37,6 @@ export function PromptComposer({
       <label className="formLabel" htmlFor="parserMode">解析模式</label>
       <select id="parserMode" value={parserMode} onChange={(event) => onSetParserMode(event.target.value as ParserMode)}>
         <option value="auto">自动</option>
-        <option value="local">本地解析</option>
         <option value="codex">Codex CLI</option>
         <option value="ai">API 解析</option>
       </select>

@@ -284,7 +284,7 @@ main {
   place-items: center;
   min-height: 340px;
   border-radius: 26px;
-  background: linear-gradient(180deg, #fff5e6, #f3ddc9);
+  background: radial-gradient(circle at 50% 18%, #fffaf0 0, #f6ead7 48%, #e9d3b8 100%);
   border: 1px solid var(--line);
   overflow: hidden;
 }
@@ -308,44 +308,71 @@ main {
   font-size: 13px;
 }
 
-.shadow {
-  fill: rgba(38, 27, 22, 0.13);
+.portraitShadow {
+  fill: rgba(47, 31, 21, 0.14);
+}
+
+.shirtBack {
+  stroke: rgba(151, 112, 82, 0.56);
+  stroke-width: 1.8;
 }
 
 .neck,
 .face,
 .ear {
-  fill: var(--skin);
-  stroke: #9e755d;
+  fill: #edbe94;
+  stroke: #9a6746;
   stroke-width: 2;
 }
 
 .ear {
-  fill: var(--skin-dark);
+  fill: #e2a878;
+}
+
+.jawShade {
+  fill: rgba(146, 88, 55, 0.14);
+  stroke: none;
 }
 
 .shoulders {
-  fill: #d7b08c;
-  stroke: #9e755d;
-  stroke-width: 2;
+  stroke: rgba(151, 112, 82, 0.58);
+  stroke-width: 1.8;
+}
+
+.backHair {
+  fill: #211611;
+  opacity: 0.92;
 }
 
 .hairCap,
-.hairSide,
-.bangs {
-  fill: currentColor;
+.hairSide {
   stroke: #1f1713;
-  stroke-width: 2.4;
+  stroke-width: 2.1;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
-.bangs {
-  fill: none;
-  stroke-width: 13;
+.hairCap {
+  filter: drop-shadow(0 4px 0 rgba(58, 32, 20, 0.18));
+}
+
+.sideburnHair {
+  stroke-width: 1.9;
+}
+
+.bangsShape,
+.bangsLayer path {
+  fill: #2b1d17;
+  stroke: #1f1713;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 .hairTexture,
+.hairHighlight,
+.bangCut,
+.flyawayHair,
 .partingLine,
 .neckline,
 .fadeBand {
@@ -355,43 +382,57 @@ main {
 }
 
 .hairTexture {
-  stroke: rgba(255, 243, 219, 0.42);
+  stroke: rgba(188, 125, 78, 0.34);
+  stroke-width: 1.55;
+}
+
+.bangCut {
+  stroke: rgba(236, 190, 132, 0.42);
+  stroke-width: 1.25;
+}
+
+.flyawayHair {
+  stroke: #251812;
   stroke-width: 2;
 }
 
 .partingLine {
-  stroke: rgba(255, 246, 230, 0.86);
-  stroke-width: 4;
+  stroke: rgba(255, 226, 181, 0.86);
+  stroke-width: 3.6;
 }
 
 .neckline {
-  stroke: #1f1713;
-  stroke-width: 3.4;
+  stroke: #211610;
+  stroke-width: 3;
   opacity: 0.82;
 }
 
 .fadeBand {
-  stroke: #fff4df;
-  stroke-width: 11;
+  stroke: rgba(238, 191, 136, 0.72);
+  stroke-width: 10;
 }
 
-.eye,
-.brow {
+.eye {
   fill: #2b211d;
+}
+
+.eyeLight {
+  fill: #fff7eb;
 }
 
 .nose,
 .mouth {
   fill: none;
-  stroke: #6c4f43;
-  stroke-width: 2.4;
+  stroke: #83563e;
+  stroke-width: 2.2;
   stroke-linecap: round;
 }
 
 .brow {
   stroke: #2b211d;
-  stroke-width: 4;
+  stroke-width: 4.2;
   stroke-linecap: round;
+  fill: none;
 }
 
 .scorePanel {

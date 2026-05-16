@@ -8,29 +8,34 @@ import { LevelPanel } from "@/components/LevelPanel";
 import { PromptComposer } from "@/components/PromptComposer";
 import { createInitialGameState, gameReducer } from "@/lib/hair/gameReducer";
 import { levels } from "@/lib/hair/levels";
-import { parseHairPrompt } from "@/lib/hair/localParser";
 import type { HairIntent, ParserMode } from "@/lib/hair/types";
 
 type ApiParseResponse =
-  | { ok: true; source: "codex" | "ai" | "local"; intent: HairIntent }
-  | { ok: false; useLocal: true; reason: string };
+  | { ok: true; source: "codex" | "ai"; intent: HairIntent }
+  | { ok: false; reason: string };
 
-const parserSourceLabels: Record<"codex" | "ai" | "local", string> = {
+const parserSourceLabels: Record<"codex" | "ai", string> = {
   codex: "Codex CLI 解析",
-  ai: "API 解析",
-  local: "本地解析"
+  ai: "API 解析"
 };
 
+function parserUnavailableIntent(reason: string): HairIntent {
+  return {
+    operations: [],
+    confidence: 0,
+    ambiguities: ["LLM 解析不可用，本次没有执行理发操作。"],
+    warnings: [reason],
+    interpretationNote: "没有可用的 LLM 解析结果，因此未修改发型。",
+    countsAsOperationStep: false
+  };
+}
+
 async function parseWithApi(prompt: string, state: ReturnType<typeof createInitialGameState>): Promise<{ intent: HairIntent; parserLabel: string; notice: string }> {
-  const level = levels[state.currentLevelIndex];
   const response = await fetch("/api/parse", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       prompt,
-      currentState: state.currentHairState,
-      levelName: level.name,
-      targetState: level.target,
       parserMode: state.parserMode
     })
   });
@@ -43,19 +48,10 @@ async function parseWithApi(prompt: string, state: ReturnType<typeof createIniti
       notice: `${label}成功。`
     };
   }
-  const fallback = parseHairPrompt(prompt, state.currentHairState);
   return {
-    intent: fallback,
-    parserLabel: "本地解析",
-    notice: `${data.reason} 已自动切换到本地解析。`
-  };
-}
-
-function parseLocally(prompt: string, state: ReturnType<typeof createInitialGameState>): { intent: HairIntent; parserLabel: string; notice: string } {
-  return {
-    intent: parseHairPrompt(prompt, state.currentHairState),
-    parserLabel: "本地解析",
-    notice: "本地解析完成。"
+    intent: parserUnavailableIntent(data.reason),
+    parserLabel: "LLM 未执行",
+    notice: `${data.reason} 未使用本地规则解析。`
   };
 }
 
@@ -76,20 +72,15 @@ export default function Home() {
     try {
       const finalPrompt = confirmOnly ? `只确认理解，先不要剪：${prompt}` : prompt;
       let result: { intent: HairIntent; parserLabel: string; notice: string };
-      if (confirmOnly) {
-        result = parseLocally(finalPrompt, state);
-      } else if (state.parserMode === "local") {
-        result = parseLocally(prompt, state);
-      } else {
-        try {
-          result = await parseWithApi(prompt, state);
-        } catch (error) {
-          const fallback = parseLocally(prompt, state);
-          result = {
-            ...fallback,
-            notice: `服务端解析不可用，已使用本地解析。${error instanceof Error ? error.message : ""}`
-          };
-        }
+      try {
+        result = await parseWithApi(finalPrompt, state);
+      } catch (error) {
+        const reason = `服务端解析不可用。${error instanceof Error ? error.message : ""}`;
+        result = {
+          intent: parserUnavailableIntent(reason),
+          parserLabel: "LLM 未执行",
+          notice: `${reason} 未使用本地规则解析。`
+        };
       }
 
       const expectedLabel = state.parserMode === "codex"
@@ -98,7 +89,7 @@ export default function Home() {
           ? "API 解析"
           : "";
       if (expectedLabel && result.parserLabel !== expectedLabel && !confirmOnly) {
-        result.notice = `${expectedLabel}不可用，已使用本地解析。`;
+        result.notice = `${expectedLabel}不可用，本次未执行理发操作。`;
       }
 
       dispatch({ type: "setParserNotice", notice: result.notice });

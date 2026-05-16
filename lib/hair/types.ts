@@ -106,4 +106,4 @@ export type PromptHistoryItem = {
   createdAt: number;
 };
 
-export type ParserMode = "auto" | "local" | "codex" | "ai";
+export type ParserMode = "auto" | "codex" | "ai";
