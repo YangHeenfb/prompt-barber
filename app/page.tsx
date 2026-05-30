@@ -7,7 +7,7 @@ import { LevelPanel } from "@/components/LevelPanel";
 import { PromptComposer } from "@/components/PromptComposer";
 import { createInitialGameState, gameReducer } from "@/lib/hair/gameReducer";
 import { levels } from "@/lib/hair/levels";
-import type { HairIntent, ParserMode } from "@/lib/hair/types";
+import type { HairIntent } from "@/lib/hair/types";
 
 type ApiParseResponse =
   | { ok: true; source: "codex" | "ai"; intent: HairIntent }
@@ -59,7 +59,7 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedHistoryStep, setSelectedHistoryStep] = useState<number | null>(null);
   const currentLevel = levels[state.currentLevelIndex];
-  const latestAmbiguities = state.history[0]?.ambiguities ?? [];
+  const latestHistoryItem = state.history[0] ?? null;
   const canGoNext = state.latestScores.passed && state.currentLevelIndex < levels.length - 1;
 
   useEffect(() => {
@@ -166,13 +166,10 @@ export default function Home() {
         <div className="rightStack">
           <PromptComposer
             level={currentLevel}
-            parserMode={state.parserMode}
-            parserNotice={state.parserNotice}
             isSubmitting={isSubmitting}
-            onSetParserMode={(mode: ParserMode) => dispatch({ type: "setParserMode", mode })}
             onSubmitPrompt={submitPrompt}
           />
-          <FeedbackCard scores={state.latestScores} latestAmbiguities={latestAmbiguities} />
+          <FeedbackCard latestHistoryItem={latestHistoryItem} />
         </div>
       </div>
     </main>

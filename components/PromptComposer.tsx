@@ -1,21 +1,15 @@
 import { useState } from "react";
-import type { LevelConfig, ParserMode } from "@/lib/hair/types";
+import type { LevelConfig } from "@/lib/hair/types";
 
 type PromptComposerProps = {
   level: LevelConfig;
-  parserMode: ParserMode;
-  parserNotice: string;
   isSubmitting: boolean;
-  onSetParserMode: (mode: ParserMode) => void;
   onSubmitPrompt: (prompt: string, confirmOnly?: boolean) => Promise<void>;
 };
 
 export function PromptComposer({
   level,
-  parserMode,
-  parserNotice,
   isSubmitting,
-  onSetParserMode,
   onSubmitPrompt
 }: PromptComposerProps) {
   const [prompt, setPrompt] = useState("");
@@ -33,14 +27,6 @@ export function PromptComposer({
         <p className="eyebrow">Prompt</p>
         <h2>输入理发指令</h2>
       </div>
-
-      <label className="formLabel" htmlFor="parserMode">解析模式</label>
-      <select id="parserMode" value={parserMode} onChange={(event) => onSetParserMode(event.target.value as ParserMode)}>
-        <option value="auto">自动</option>
-        <option value="codex">Codex CLI</option>
-        <option value="ai">API 解析</option>
-      </select>
-      <p className="noticeText">{parserNotice}</p>
 
       <label className="formLabel" htmlFor="hairPrompt">你的描述</label>
       <textarea

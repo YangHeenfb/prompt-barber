@@ -1,37 +1,45 @@
-import type { ScoreBreakdown } from "@/lib/hair/types";
-import { summarizeFieldGap } from "@/lib/hair/scoring";
+import type { PromptHistoryItem } from "@/lib/hair/types";
+import { formatSeconds } from "@/lib/hair/format";
 
 type FeedbackCardProps = {
-  scores: ScoreBreakdown;
-  latestAmbiguities: string[];
+  latestHistoryItem: PromptHistoryItem | null;
 };
 
-export function FeedbackCard({ scores, latestAmbiguities }: FeedbackCardProps) {
-  const sorted = [...scores.fieldScores].sort((a, b) => b.scorePercent - a.scorePercent);
-  const closest = sorted.slice(0, 2);
-  const biggestGaps = sorted.slice(-2).reverse();
-
+export function FeedbackCard({ latestHistoryItem }: FeedbackCardProps) {
   return (
-    <div className="feedbackCard">
+    <section className="panel feedbackCard">
       <div className="panelHeader compact">
         <p className="eyebrow">反馈</p>
-        <h3>这一轮哪里接近，哪里偏了</h3>
+        <h3>理发师理解</h3>
       </div>
-      <div className="feedbackColumns">
-        <div>
-          <h4>最接近目标</h4>
-          {closest.map((detail) => (
-            <p key={detail.field}>{summarizeFieldGap(detail)}</p>
-          ))}
+
+      {latestHistoryItem ? (
+        <div className="barberUnderstanding">
+          <div className="historyMeta">
+            <span>{latestHistoryItem.parserLabel}</span>
+            <span>{formatSeconds(latestHistoryItem.scores.elapsedSeconds)}</span>
+          </div>
+          <blockquote>{latestHistoryItem.prompt}</blockquote>
+          <p>{latestHistoryItem.intent.interpretationNote}</p>
+          {latestHistoryItem.appliedOperations.length ? (
+            <ul>
+              {latestHistoryItem.appliedOperations.map((operation, index) => (
+                <li key={`${latestHistoryItem.id}-${index}`}>{operation.message}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="noticeText">没有实际修剪，因此不计入操作步数。</p>
+          )}
+          {latestHistoryItem.ambiguities.length ? (
+            <div className="warningText">模糊点：{latestHistoryItem.ambiguities.join("；")}</div>
+          ) : null}
+          {latestHistoryItem.warnings.length ? (
+            <div className="warningText">提醒：{latestHistoryItem.warnings.join("；")}</div>
+          ) : null}
         </div>
-        <div>
-          <h4>偏差最大</h4>
-          {biggestGaps.map((detail) => (
-            <p key={detail.field}>{detail.message} {summarizeFieldGap(detail)}</p>
-          ))}
-        </div>
-      </div>
-      {latestAmbiguities.length ? <div className="warningText">模糊点：{latestAmbiguities.join("；")}</div> : null}
-    </div>
+      ) : (
+        <p className="emptyText">还没有理发师理解结果。输入一条 prompt 后会显示这一轮的理解。</p>
+      )}
+    </section>
   );
 }
