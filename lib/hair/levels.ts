@@ -43,7 +43,7 @@ export const levels: LevelConfig[] = [
   {
     id: "low-fade-texture",
     name: "低渐变碎盖",
-    goal: "练习描述程度和边界，例如低渐变、只打薄、不要推太高。",
+    goal: "练习描述程度和边界，例如低渐变、只打薄、控制推剪高度。",
     target: {
       topLength: 6,
       sideLength: 2,
@@ -81,7 +81,7 @@ export const levels: LevelConfig[] = [
   {
     id: "korean-middle-part",
     name: "韩式中分",
-    goal: "练习描述风格、方向和禁忌，例如中分、保留长度、不要高渐变。",
+    goal: "练习描述风格、方向和整体轮廓，例如中分、保留长度、自然过渡。",
     target: {
       topLength: 7,
       sideLength: 4,

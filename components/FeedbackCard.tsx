@@ -31,11 +31,6 @@ export function FeedbackCard({ scores, latestAmbiguities }: FeedbackCardProps) {
           ))}
         </div>
       </div>
-      {scores.violations.length ? (
-        <div className="warningText">违反禁忌：{scores.violations.join("；")}</div>
-      ) : (
-        <div className="okText">目前没有违反禁忌项。</div>
-      )}
       {latestAmbiguities.length ? <div className="warningText">模糊点：{latestAmbiguities.join("；")}</div> : null}
     </div>
   );

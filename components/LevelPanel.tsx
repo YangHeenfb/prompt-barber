@@ -53,18 +53,6 @@ export function LevelPanel({ levels, currentIndex, onSelectLevel }: LevelPanelPr
         </div>
       </div>
 
-      <div className="forbiddenBox">
-        <h3>禁忌项</h3>
-        {level.forbiddenRules.length === 0 ? (
-          <p>本关没有额外禁忌，重点是把区域说清楚。</p>
-        ) : (
-          <ul>
-            {level.forbiddenRules.map((rule) => (
-              <li key={rule.id}>{rule.label}</li>
-            ))}
-          </ul>
-        )}
-      </div>
     </section>
   );
 }

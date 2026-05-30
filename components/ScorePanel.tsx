@@ -41,9 +41,9 @@ export function ScorePanel({ scores, threshold }: ScorePanelProps) {
           <small>{formatSeconds(scores.elapsedSeconds)}</small>
         </div>
         <div>
-          <span>禁忌分</span>
+          <span>顾客满意度</span>
           <strong>{scores.constraintScore}</strong>
-          <small>{scores.violations.length ? `${scores.violations.length} 项违规` : "无违规"}</small>
+          <small>根据整体观感变化</small>
         </div>
       </div>
     </div>
