@@ -1,14 +1,10 @@
 import { useState } from "react";
-import type { LevelConfig } from "@/lib/hair/types";
-
 type PromptComposerProps = {
-  level: LevelConfig;
   isSubmitting: boolean;
   onSubmitPrompt: (prompt: string, confirmOnly?: boolean) => Promise<void>;
 };
 
 export function PromptComposer({
-  level,
   isSubmitting,
   onSubmitPrompt
 }: PromptComposerProps) {
@@ -44,17 +40,6 @@ export function PromptComposer({
         <button className="secondaryButton" type="button" onClick={() => void submit(true)} disabled={isSubmitting || !prompt.trim()}>
           只确认理解
         </button>
-      </div>
-
-      <div className="hintBox">
-        <h3>提示语</h3>
-        <div className="hintChips">
-          {level.hints.map((hint) => (
-            <button key={hint} type="button" onClick={() => setPrompt(hint)}>
-              {hint}
-            </button>
-          ))}
-        </div>
       </div>
     </section>
   );

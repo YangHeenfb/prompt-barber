@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { FeedbackCard } from "@/components/FeedbackCard";
 import { GameStage } from "@/components/GameStage";
 import { LevelPanel } from "@/components/LevelPanel";
@@ -112,23 +112,16 @@ export default function Home() {
     }
   }
 
-  const subtitle = useMemo(() => {
-    if (state.latestScores.passed) return "已经过线。现在可以继续追求更少步数、更高准确度，或者进入下一关。";
-    return "当前还没过线。把区域、程度和不要做什么说得更明确，分数会更稳定。";
-  }, [state.latestScores.passed]);
-
   return (
     <main>
       <header className="hero">
-        <div>
-          <p className="eyebrow">MVP</p>
+        <div className="heroMain">
           <h1>Prompt Barber</h1>
-          <p>用准确的描述，训练一位容易误解你的理发师。</p>
-          <p className="heroSubtext">{subtitle}</p>
+          <p className="heroTagline">用准确的描述，训练一位容易误解你的理发师。</p>
         </div>
         <div className="heroCard">
           <span>当前关卡</span>
-          <strong>{state.currentLevelIndex + 1} / {levels.length}</strong>
+          <strong>{state.currentLevelIndex + 1}/{levels.length}</strong>
           <em>{currentLevel.name}</em>
         </div>
       </header>
@@ -165,11 +158,10 @@ export default function Home() {
 
         <div className="rightStack">
           <PromptComposer
-            level={currentLevel}
             isSubmitting={isSubmitting}
             onSubmitPrompt={submitPrompt}
           />
-          <FeedbackCard latestHistoryItem={latestHistoryItem} />
+          <FeedbackCard latestHistoryItem={latestHistoryItem} level={currentLevel} />
         </div>
       </div>
     </main>
