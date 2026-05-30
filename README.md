@@ -24,6 +24,7 @@ Prompt Barber 是一个基于 prompt 的理发沟通游戏 MVP。玩家看到当
 ```text
 app/page.tsx                         主游戏页面
 app/api/parse/route.ts                可选 AI 解析接口
+app/api/barber-copy/route.ts          可选 AI 理发师反馈文案接口
 components/HairRenderer.tsx           SVG 发型渲染
 components/LevelPanel.tsx             关卡与目标发型
 components/GameStage.tsx              当前顾客和分数
@@ -35,6 +36,9 @@ lib/hair/levels.ts                    三个关卡
 lib/hair/applyIntent.ts               操作应用与不可逆规则
 lib/hair/scoring.ts                   评分系统
 lib/hair/schema.ts                    AI 结构化输出 schema
+lib/hair/barberCopyInput.ts           把结构化结果转换成文案事实
+lib/hair/barberCopyFallback.ts        本地确定性理发师文案 fallback
+lib/hair/barberCopySchema.ts          理发师反馈结构化输出 schema
 lib/hair/gameReducer.ts               游戏状态 reducer
 tests                                纯函数测试
 ```
@@ -106,11 +110,30 @@ CODEX_CLI_DISABLED=1
 ```bash
 OPENAI_API_KEY=你的_key
 OPENAI_MODEL=gpt-5.4-mini
+OPENAI_BARBER_COPY_MODEL=gpt-5.4-mini
 ```
 
 注意：不要把 API key 写成 `NEXT_PUBLIC_OPENAI_API_KEY`。带 `NEXT_PUBLIC_` 前缀的环境变量会暴露到浏览器端，这个项目只允许在服务端 route handler 里读取 API key。
 
 如果 Codex CLI 或 API 解析失败，前端会显示错误提示并保持当前发型不变，不会回退到本地规则。
+
+## 理发师反馈文案
+
+玩家可见的“理发师理解”只展示一个短标题和一段自然中文反馈，不展示 parser、模型、耗时、字段名、参数值或操作列表。
+
+`app/api/barber-copy/route.ts` 会把已经执行过的结构化结果转换成安全的人类可读事实，再调用 OpenAI Responses API 生成展示文案。这个 LLM 只负责表达，不决定理发操作，不修改 `HairState`，不参与评分。
+
+文案输入会包含玩家最新原话、最近 1-3 轮简短上下文、可展示的理发事实和轻量 `interactionGuidance`。这样类似“再短一点”“不是这个意思”“你剪太少了”这类跟进句会被当作对话回应处理，而不是只机械复述操作事实。
+
+如果未设置 `OPENAI_API_KEY`，或文案 API 失败，前端会使用 `lib/hair/barberCopyFallback.ts` 的本地确定性 fallback。玩法逻辑和评分不受影响。
+
+文案模型选择顺序：
+
+```text
+OPENAI_BARBER_COPY_MODEL
+OPENAI_MODEL
+gpt-5.4-mini
+```
 
 ## 评分公式
 

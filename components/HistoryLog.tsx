@@ -1,5 +1,11 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import type { LevelConfig, PromptHistoryItem } from "@/lib/hair/types";
-import { createBarberCopy } from "@/lib/hair/barberCopy";
+import { getBarberCopy } from "@/lib/hair/barberCopyClient";
+import { createBarberCopyFallback } from "@/lib/hair/barberCopyFallback";
+import { buildBarberCopyInputFromHistory, buildRecentHistorySummary } from "@/lib/hair/barberCopyInput";
+import type { BarberCopyResponse } from "@/lib/hair/barberCopySchema";
 
 type HistoryLogProps = {
   history: PromptHistoryItem[];
@@ -7,6 +13,38 @@ type HistoryLogProps = {
 };
 
 export function HistoryLog({ history, level }: HistoryLogProps) {
+  const copyInputs = useMemo(
+    () => history.map((item, index) => ({
+      id: item.id,
+      input: buildBarberCopyInputFromHistory(item, level, history.length - index, {
+        previousPlayerPrompt: history[index + 1]?.prompt,
+        previousBarberSpokenText: history[index + 1]
+          ? createBarberCopyFallback(buildBarberCopyInputFromHistory(history[index + 1], level, history.length - index - 1)).spokenText
+          : undefined,
+        recentHistorySummary: buildRecentHistorySummary(history, level, index)
+      })
+    })),
+    [history, level]
+  );
+  const [copies, setCopies] = useState<Record<string, BarberCopyResponse>>({});
+
+  useEffect(() => {
+    let active = true;
+    const fallbackCopies = Object.fromEntries(copyInputs.map(({ id, input }) => [id, createBarberCopyFallback(input)]));
+    setCopies(fallbackCopies);
+
+    copyInputs.forEach(({ id, input }) => {
+      void getBarberCopy(input).then((copy) => {
+        if (!active) return;
+        setCopies((current) => ({ ...current, [id]: copy }));
+      });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [copyInputs]);
+
   return (
     <section className="panel historyPanel">
       <div className="panelHeader compact">
@@ -18,18 +56,7 @@ export function HistoryLog({ history, level }: HistoryLogProps) {
       ) : (
         <div className="historyList">
           {history.map((item, index) => {
-            const barberCopy = createBarberCopy({
-              prompt: item.prompt,
-              intent: {
-                ...item.intent,
-                ambiguities: item.ambiguities,
-                warnings: item.warnings
-              },
-              appliedOperations: item.appliedOperations,
-              scores: item.scores,
-              level,
-              stepIndex: history.length - index
-            });
+            const barberCopy = copies[item.id] ?? createBarberCopyFallback(copyInputs[index].input);
 
             return (
               <article key={item.id} className="historyItem">

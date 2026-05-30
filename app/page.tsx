@@ -161,7 +161,7 @@ export default function Home() {
             isSubmitting={isSubmitting}
             onSubmitPrompt={submitPrompt}
           />
-          <FeedbackCard latestHistoryItem={latestHistoryItem} level={currentLevel} />
+          <FeedbackCard latestHistoryItem={latestHistoryItem} history={state.history} level={currentLevel} />
         </div>
       </div>
     </main>
