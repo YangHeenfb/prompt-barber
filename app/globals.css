@@ -264,26 +264,101 @@ main {
 }
 
 .rendererShell {
+  position: relative;
   display: grid;
   place-items: center;
+  gap: 12px;
   min-height: 340px;
+  padding: 14px 62px 16px;
   border-radius: 26px;
   background: radial-gradient(circle at 50% 18%, #fffaf0 0, #f6ead7 48%, #e9d3b8 100%);
   border: 1px solid var(--line);
   overflow: hidden;
 }
 
+.stageReviewControls {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  pointer-events: none;
+}
+
+.stageArrowButton {
+  pointer-events: auto;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(111, 55, 27, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 253, 247, 0.9);
+  color: var(--accent-dark);
+  box-shadow: 0 10px 22px rgba(56, 38, 24, 0.12);
+}
+
+.stageArrowButton span {
+  display: block;
+  margin-top: -2px;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.stageArrowButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+
+.stageArrowButton:disabled {
+  opacity: 0.32;
+}
+
+.stageReviewInfo {
+  width: min(100%, 380px);
+  padding: 11px 13px;
+  border-radius: 18px;
+  border: 1px solid rgba(228, 213, 195, 0.82);
+  background: rgba(255, 253, 247, 0.72);
+}
+
+.stageReviewMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.stageReviewMeta strong {
+  color: var(--ink);
+}
+
+.stageReviewInfo p {
+  margin: 7px 0 0;
+  color: var(--ink);
+  font-weight: 800;
+  line-height: 1.42;
+  overflow-wrap: anywhere;
+}
+
 .hairRenderer {
   color: var(--hair);
+  width: 100%;
   display: grid;
   justify-items: center;
   gap: 6px;
 }
 
+.hairRenderer svg {
+  max-width: 100%;
+  height: auto;
+}
+
 .hairRendererSmall svg {
   width: min(220px, 100%);
-  height: auto;
-  max-width: 100%;
 }
 
 .rendererLabel {
@@ -667,5 +742,15 @@ blockquote {
 
   .rendererShell {
     min-height: 300px;
+    padding: 12px 48px 14px;
+  }
+
+  .stageArrowButton {
+    width: 38px;
+    height: 38px;
+  }
+
+  .stageArrowButton span {
+    font-size: 29px;
   }
 }

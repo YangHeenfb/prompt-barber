@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { FeedbackCard } from "@/components/FeedbackCard";
 import { GameStage } from "@/components/GameStage";
-import { HistoryLog } from "@/components/HistoryLog";
 import { LevelPanel } from "@/components/LevelPanel";
 import { PromptComposer } from "@/components/PromptComposer";
 import { createInitialGameState, gameReducer } from "@/lib/hair/gameReducer";
@@ -58,6 +57,7 @@ async function parseWithApi(prompt: string, state: ReturnType<typeof createIniti
 export default function Home() {
   const [state, dispatch] = useReducer(gameReducer, undefined, () => createInitialGameState());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedHistoryStep, setSelectedHistoryStep] = useState<number | null>(null);
   const currentLevel = levels[state.currentLevelIndex];
   const latestAmbiguities = state.history[0]?.ambiguities ?? [];
   const canGoNext = state.latestScores.passed && state.currentLevelIndex < levels.length - 1;
@@ -66,6 +66,10 @@ export default function Home() {
     const timer = window.setInterval(() => dispatch({ type: "tick", now: Date.now() }), 1000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    setSelectedHistoryStep((step) => (step !== null && step > state.history.length ? null : step));
+  }, [state.history.length]);
 
   async function submitPrompt(prompt: string, confirmOnly = false) {
     setIsSubmitting(true);
@@ -102,6 +106,7 @@ export default function Home() {
           createdAt: Date.now()
         }
       });
+      setSelectedHistoryStep(null);
     } finally {
       setIsSubmitting(false);
     }
@@ -132,17 +137,29 @@ export default function Home() {
         <LevelPanel
           levels={levels}
           currentIndex={state.currentLevelIndex}
-          onSelectLevel={(index) => dispatch({ type: "selectLevel", index, now: Date.now() })}
+          onSelectLevel={(index) => {
+            setSelectedHistoryStep(null);
+            dispatch({ type: "selectLevel", index, now: Date.now() });
+          }}
         />
 
         <GameStage
           level={currentLevel}
           currentHairState={state.currentHairState}
+          history={state.history}
+          selectedHistoryStep={selectedHistoryStep}
           scores={state.latestScores}
           debugVisible={state.debugVisible}
           canGoNext={canGoNext}
-          onReset={() => dispatch({ type: "resetLevel", now: Date.now() })}
-          onNext={() => dispatch({ type: "nextLevel", now: Date.now() })}
+          onSelectHistoryStep={setSelectedHistoryStep}
+          onReset={() => {
+            setSelectedHistoryStep(null);
+            dispatch({ type: "resetLevel", now: Date.now() });
+          }}
+          onNext={() => {
+            setSelectedHistoryStep(null);
+            dispatch({ type: "nextLevel", now: Date.now() });
+          }}
           onToggleDebug={() => dispatch({ type: "toggleDebug" })}
         />
 
@@ -156,7 +173,6 @@ export default function Home() {
             onSubmitPrompt={submitPrompt}
           />
           <FeedbackCard scores={state.latestScores} latestAmbiguities={latestAmbiguities} />
-          <HistoryLog history={state.history} />
         </div>
       </div>
     </main>
