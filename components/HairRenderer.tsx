@@ -15,86 +15,89 @@ export function HairRenderer({ state, size = "large", label }: HairRendererProps
   const height = size === "small" ? 270 : 320;
   const hairGradientId = `hairShade-${size}`;
   const sideGradientId = `sideShade-${size}`;
+  const highlightGradientId = `hairHighlight-${size}`;
   const capeGradientId = `capeShade-${size}`;
 
-  const topRise = clamp(32 + state.topLength * 2.5 + state.volume * 2.8, 40, 78);
-  const capTop = 116 - topRise;
-  const capLeft = clamp(80 - state.sideLength * 0.9 - state.volume * 0.25, 68, 82);
+  const topRise = clamp(34 + state.topLength * 2.8 + state.volume * 2.7, 42, 82);
+  const capTop = 118 - topRise;
+  const capLeft = clamp(80 - state.sideLength * 1.05 - state.volume * 0.45, 66, 82);
   const capRight = 260 - capLeft;
-  const crownTension = clamp(state.volume * 1.1 - state.texture * 0.25, 0, 9);
-  const sideThickness = clamp(7 + state.sideLength * 1.35 - state.fadeHeight * 1.25, 7, 21);
-  const sideEnd = clamp(132 + state.sideLength * 6.5 - state.fadeHeight * 4.8, 140, 188);
-  const sideburnEnd = clamp(148 + state.sideburns * 6.2, 156, 204);
-  const sideburnWidth = clamp(5 + state.sideburns * 0.95, 7, 15);
-  const bangsBottom = clamp(96 + state.bangsLength * 5.1 - state.volume * 0.35, 108, 142);
-  const bangsLift = state.volume > 6 ? -5 : state.volume < 3 ? 4 : 0;
-  const textureCount = Math.max(3, Math.round(3 + state.texture * 0.9));
+  const crownPuff = clamp(8 + state.volume * 1.85, 12, 28);
+  const sideWidth = clamp(11 + state.sideLength * 1.65 - state.fadeHeight * 1.7, 7, 25);
+  const sideEnd = clamp(130 + state.sideLength * 7 - state.fadeHeight * 5.6, 138, 190);
+  const cheekCut = clamp(2 + state.fadeHeight * 3.8, 2, 17);
+  const sideburnEnd = clamp(146 + state.sideburns * 6.5, 152, 208);
+  const sideburnWidth = clamp(5 + state.sideburns * 1.05, 7, 17);
+  const bangsBottom = clamp(96 + state.bangsLength * 5.2 - state.volume * 0.45, 106, 145);
+  const bangsLift = clamp(5 - state.volume * 1.2, -6, 5);
+  const textureCount = Math.round(clamp(1 + state.texture * 0.55, 1, 7));
   const fadeBands = Math.max(0, Math.round(state.fadeHeight));
-  const flyawayCount = Math.round(clamp((state.topLength + state.volume - 10) / 1.5, 0, 4));
+  const flyawayCount = Math.round(clamp((state.texture + state.volume + state.topLength - 16) / 2.6, 0, 3));
   const hasParting = state.parting !== "none";
-  const partX = state.parting === "left" ? 108 : state.parting === "right" ? 152 : 130;
-  const necklineY = state.neckline === "clean" ? 231 : state.neckline === "tapered" ? 238 : 234;
+  const partX = state.parting === "left" ? 106 : state.parting === "right" ? 154 : 130;
+  const necklineY = state.neckline === "clean" ? 229 : state.neckline === "tapered" ? 237 : 233;
 
   const hairCapPath = [
-    `M ${capLeft} 114`,
-    `C ${capLeft + 2} ${84 - crownTension}, ${95 - state.volume * 0.45} ${capTop}, 130 ${capTop}`,
-    `C ${165 + state.volume * 0.45} ${capTop}, ${capRight - 2} ${84 - crownTension}, ${capRight} 114`,
-    `C 170 ${101 + bangsLift}, 148 ${101 + bangsLift * 0.3}, 130 ${103 + bangsLift * 0.25}`,
-    `C 112 ${101 + bangsLift * 0.3}, 90 ${101 + bangsLift}, ${capLeft} 114`,
+    `M ${capLeft} 118`,
+    `C ${capLeft - 1} ${91 - state.volume * 0.9}, ${94 - crownPuff * 0.55} ${capTop + 2}, 130 ${capTop}`,
+    `C ${166 + crownPuff * 0.55} ${capTop + 2}, ${capRight + 1} ${91 - state.volume * 0.9}, ${capRight} 118`,
+    `C ${167 + state.bangsLength * 0.7} ${104 + bangsLift}, 150 ${101 + bangsLift * 0.35}, 130 ${104 + bangsLift * 0.25}`,
+    `C 110 ${101 + bangsLift * 0.35}, ${93 - state.bangsLength * 0.7} ${104 + bangsLift}, ${capLeft} 118`,
     "Z"
   ].join(" ");
 
   const leftSidePath = [
-    `M ${capLeft + 10} 105`,
-    `C ${79 - sideThickness} 116, ${74 - sideThickness * 0.45} 141, ${77 - state.fadeHeight * 0.8} ${sideEnd}`,
-    `C 78 ${sideEnd + 11}, ${91 + sideThickness * 0.1} ${sideEnd + 8}, ${99} ${sideEnd - 5}`,
-    `C ${96 - sideThickness * 0.08} 149, 98 124, 107 110`,
-    `C 99 106, 89 103, ${capLeft + 10} 105`,
+    `M ${capLeft + 9} 108`,
+    `C ${82 - sideWidth} 122, ${77 - sideWidth * 0.45} 145, ${80 + cheekCut * 0.1} ${sideEnd}`,
+    `C ${81 + cheekCut} ${sideEnd + 9}, ${94 + sideWidth * 0.18} ${sideEnd + 6}, ${100 + cheekCut * 0.22} ${sideEnd - 6}`,
+    `C ${98 - sideWidth * 0.08} 150, 99 126, 108 111`,
+    `C 101 107, 91 105, ${capLeft + 9} 108`,
     "Z"
   ].join(" ");
 
   const rightSidePath = [
-    `M ${capRight - 10} 105`,
-    `C ${181 + sideThickness} 116, ${186 + sideThickness * 0.45} 141, ${183 + state.fadeHeight * 0.8} ${sideEnd}`,
-    `C 182 ${sideEnd + 11}, ${169 - sideThickness * 0.1} ${sideEnd + 8}, ${161} ${sideEnd - 5}`,
-    `C ${164 + sideThickness * 0.08} 149, 162 124, 153 110`,
-    `C 161 106, 171 103, ${capRight - 10} 105`,
+    `M ${capRight - 9} 108`,
+    `C ${178 + sideWidth} 122, ${183 + sideWidth * 0.45} 145, ${180 - cheekCut * 0.1} ${sideEnd}`,
+    `C ${179 - cheekCut} ${sideEnd + 9}, ${166 - sideWidth * 0.18} ${sideEnd + 6}, ${160 - cheekCut * 0.22} ${sideEnd - 6}`,
+    `C ${162 + sideWidth * 0.08} 150, 161 126, 152 111`,
+    `C 159 107, 169 105, ${capRight - 9} 108`,
     "Z"
   ].join(" ");
 
   const leftSideburnPath = [
-    `M ${91 - sideburnWidth * 0.22} 145`,
-    `C ${84 - sideburnWidth * 0.35} 160, ${83 - sideburnWidth * 0.18} ${sideburnEnd - 8}, 88 ${sideburnEnd}`,
-    `C ${94 + sideburnWidth * 0.2} ${sideburnEnd - 1}, ${99 + sideburnWidth * 0.12} 163, 98 146`,
+    `M ${93 - sideburnWidth * 0.28} 143`,
+    `C ${85 - sideburnWidth * 0.28} 160, ${85 - sideburnWidth * 0.1} ${sideburnEnd - 8}, 90 ${sideburnEnd}`,
+    `C ${96 + sideburnWidth * 0.18} ${sideburnEnd - 1}, ${100 + sideburnWidth * 0.08} 162, 99 145`,
     "Z"
   ].join(" ");
 
   const rightSideburnPath = [
-    `M ${169 + sideburnWidth * 0.22} 145`,
-    `C ${176 + sideburnWidth * 0.35} 160, ${177 + sideburnWidth * 0.18} ${sideburnEnd - 8}, 172 ${sideburnEnd}`,
-    `C ${166 - sideburnWidth * 0.2} ${sideburnEnd - 1}, ${161 - sideburnWidth * 0.12} 163, 162 146`,
+    `M ${167 + sideburnWidth * 0.28} 143`,
+    `C ${175 + sideburnWidth * 0.28} 160, ${175 + sideburnWidth * 0.1} ${sideburnEnd - 8}, 170 ${sideburnEnd}`,
+    `C ${164 - sideburnWidth * 0.18} ${sideburnEnd - 1}, ${160 - sideburnWidth * 0.08} 162, 161 145`,
     "Z"
   ].join(" ");
 
   const textureStrokes = Array.from({ length: textureCount }).map((_, index) => {
-    const x = 84 + index * (92 / Math.max(1, textureCount - 1));
-    const y = capTop + 20 + Math.sin(index * 1.7) * 4;
-    const pull = index % 2 === 0 ? 11 : -11;
+    const x = 92 + index * (76 / Math.max(1, textureCount - 1));
+    const y = capTop + 19 + Math.sin(index * 1.55) * 5;
+    const pull = index % 2 === 0 ? 9 : -9;
     return (
       <path
         key={index}
-        d={`M ${x} ${y} C ${x + pull} ${y + 10}, ${x - pull * 0.35} ${y + 23}, ${x + pull * 0.2} ${y + 35}`}
+        d={`M ${x} ${y} C ${x + pull} ${y + 9}, ${x - pull * 0.2} ${y + 21}, ${x + pull * 0.15} ${y + 31}`}
         className="hairTexture"
       />
     );
   });
 
-  const bangCuts = Array.from({ length: Math.max(3, Math.round(state.texture / 2 + state.bangsLength / 2)) }).map((_, index, cuts) => {
-    const x = 93 + index * (74 / Math.max(1, cuts.length - 1));
-    const y = 104 + Math.sin(index * 1.4) * 3;
-    const endY = bangsBottom - 2 + Math.sin(index * 2.1) * 4;
-    const pull = index % 2 === 0 ? -6 : 6;
-    return <path key={index} d={`M ${x} ${y} C ${x + pull} ${y + 9}, ${x - pull * 0.4} ${endY - 8}, ${x + pull * 0.18} ${endY}`} className="bangCut" />;
+  const bangCutCount = Math.round(clamp(2 + state.texture * 0.35 + state.bangsLength * 0.14, 2, 6));
+  const bangCuts = Array.from({ length: bangCutCount }).map((_, index) => {
+    const x = 97 + index * (66 / Math.max(1, bangCutCount - 1));
+    const y = 109 + Math.sin(index * 1.4) * 2;
+    const endY = bangsBottom - 5 + Math.sin(index * 1.9) * 4;
+    const pull = index % 2 === 0 ? -5 : 5;
+    return <path key={index} d={`M ${x} ${y} C ${x + pull} ${y + 8}, ${x - pull * 0.3} ${endY - 8}, ${x + pull * 0.15} ${endY}`} className="bangCut" />;
   });
 
   const flyaways = Array.from({ length: flyawayCount }).map((_, index) => {
@@ -105,39 +108,39 @@ export function HairRenderer({ state, size = "large", label }: HairRendererProps
   });
 
   const fadeShapes = Array.from({ length: fadeBands }).map((_, index) => {
-    const y = 132 + index * 12;
-    const opacity = 0.2 + index * 0.07;
+    const y = 130 + index * 13;
+    const opacity = 0.24 + index * 0.08;
     return (
       <g key={index} opacity={opacity}>
-        <path d={`M ${86 - index * 1.5} ${y} C ${78 - index} ${y + 8}, ${78 - index} ${y + 17}, ${87} ${y + 25}`} className="fadeBand" />
-        <path d={`M ${174 + index * 1.5} ${y} C ${182 + index} ${y + 8}, ${182 + index} ${y + 17}, ${173} ${y + 25}`} className="fadeBand" />
+        <path d={`M ${90 - index * 1.4} ${y} C ${82 - index * 1.2} ${y + 8}, ${82 - index * 1.2} ${y + 18}, ${90 + index * 0.5} ${y + 27}`} className="fadeBand" />
+        <path d={`M ${170 + index * 1.4} ${y} C ${178 + index * 1.2} ${y + 8}, ${178 + index * 1.2} ${y + 18}, ${170 - index * 0.5} ${y + 27}`} className="fadeBand" />
       </g>
     );
   });
 
   const bangsPath = [
-    "M 80 101",
-    `C 94 ${93 + bangsLift}, 111 ${96 + bangsLift}, 130 ${99 + bangsLift * 0.4}`,
-    `C 149 ${96 + bangsLift}, 166 ${93 + bangsLift}, 180 101`,
-    `C 174 ${bangsBottom - 5}, 160 ${bangsBottom + 3}, 145 ${bangsBottom - 1}`,
-    `C 131 ${bangsBottom + 7}, 111 ${bangsBottom}, 92 ${bangsBottom + 5}`,
-    `C 87 ${bangsBottom - 4}, 83 ${bangsBottom - 1}, 80 101`,
+    "M 81 104",
+    `C 96 ${95 + bangsLift}, 112 ${97 + bangsLift}, 130 ${101 + bangsLift * 0.4}`,
+    `C 148 ${97 + bangsLift}, 164 ${95 + bangsLift}, 179 104`,
+    `C 174 ${bangsBottom - 7}, 160 ${bangsBottom + 2}, 145 ${bangsBottom - 2}`,
+    `C 130 ${bangsBottom + 8}, 111 ${bangsBottom - 1}, 94 ${bangsBottom + 4}`,
+    `C 88 ${bangsBottom - 5}, 84 ${bangsBottom - 1}, 81 104`,
     "Z"
   ].join(" ");
 
   const partedBangLeft = [
-    "M 82 103",
-    `C 97 ${88 + bangsLift}, ${partX - 10} ${96 + bangsLift}, ${partX - 2} ${101 + bangsLift}`,
-    `C ${partX - 11} ${bangsBottom - 1}, ${partX - 30} ${bangsBottom + 6}, 91 ${bangsBottom}`,
-    `C 87 ${bangsBottom - 7}, 84 ${bangsBottom - 1}, 82 103`,
+    "M 82 105",
+    `C 98 ${90 + bangsLift}, ${partX - 10} ${96 + bangsLift}, ${partX - 2} ${102 + bangsLift}`,
+    `C ${partX - 11} ${bangsBottom + 1}, ${partX - 30} ${bangsBottom + 8}, 92 ${bangsBottom}`,
+    `C 87 ${bangsBottom - 7}, 84 ${bangsBottom - 1}, 82 105`,
     "Z"
   ].join(" ");
 
   const partedBangRight = [
-    `M ${partX + 2} ${101 + bangsLift}`,
-    `C ${partX + 15} ${96 + bangsLift}, 164 ${88 + bangsLift}, 178 103`,
-    `C 176 ${bangsBottom - 1}, 169 ${bangsBottom - 6}, 157 ${bangsBottom}`,
-    `C ${partX + 32} ${bangsBottom + 5}, ${partX + 11} ${bangsBottom - 1}, ${partX + 2} ${101 + bangsLift}`,
+    `M ${partX + 2} ${102 + bangsLift}`,
+    `C ${partX + 15} ${96 + bangsLift}, 162 ${90 + bangsLift}, 178 105`,
+    `C 176 ${bangsBottom - 1}, 170 ${bangsBottom - 7}, 158 ${bangsBottom}`,
+    `C ${partX + 32} ${bangsBottom + 8}, ${partX + 11} ${bangsBottom + 1}, ${partX + 2} ${102 + bangsLift}`,
     "Z"
   ].join(" ");
 
@@ -166,17 +169,22 @@ export function HairRenderer({ state, size = "large", label }: HairRendererProps
             <stop offset="0%" stopColor="#f4ead9" />
             <stop offset="100%" stopColor="#d9c5aa" />
           </linearGradient>
+          <linearGradient id={highlightGradientId} x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="#7a5037" />
+            <stop offset="100%" stopColor="#4a2f22" />
+          </linearGradient>
         </defs>
 
-        <ellipse cx="130" cy="292" rx="83" ry="17" className="portraitShadow" />
-        <path d="M 88 288 C 91 254, 108 242, 130 242 C 152 242, 169 254, 172 288 Z" className="shirtBack" fill={`url(#${capeGradientId})`} />
-        <path d="M 111 222 C 113 248, 104 256, 95 275 L 165 275 C 156 256, 147 248, 149 222 Z" className="neck" />
-        <path d="M 68 291 C 78 254, 101 250, 130 250 C 159 250, 182 254, 192 291 Z" className="shoulders" fill={`url(#${capeGradientId})`} />
-        <path d="M 83 128 C 82 104, 88 82, 102 68 C 116 55, 144 55, 158 68 C 172 82, 178 104, 177 128 Z" className="backHair" />
-        <ellipse cx="75" cy="158" rx="13" ry="21" className="ear" />
-        <ellipse cx="185" cy="158" rx="13" ry="21" className="ear" />
-        <path d="M 82 116 C 83 80, 103 60, 130 60 C 157 60, 177 80, 178 116 L 180 161 C 182 211, 160 239, 130 239 C 100 239, 78 211, 80 161 Z" className="face" />
-        <path d="M 98 220 C 109 234, 151 234, 162 220 C 155 242, 105 242, 98 220 Z" className="jawShade" />
+        <ellipse cx="130" cy="292" rx="82" ry="17" className="portraitShadow" />
+        <path d="M 98 287 C 101 256, 113 242, 130 242 C 147 242, 159 256, 162 287 Z" className="shirtBack" fill={`url(#${capeGradientId})`} />
+        <path d="M 113 219 C 115 244, 106 254, 97 272 L 163 272 C 154 254, 145 244, 147 219 Z" className="neck" />
+        <path d="M 67 291 C 78 260, 102 250, 130 250 C 158 250, 182 260, 193 291 Z" className="shoulders" fill={`url(#${capeGradientId})`} />
+        <path d="M 82 127 C 80 103, 87 82, 102 68 C 118 54, 142 54, 158 68 C 173 82, 180 103, 178 127 L 174 169 C 171 150, 164 128, 150 113 L 110 113 C 96 128, 89 150, 86 169 Z" className="backHair" />
+        <ellipse cx="75" cy="158" rx="12" ry="20" className="ear" />
+        <ellipse cx="185" cy="158" rx="12" ry="20" className="ear" />
+        <path d="M 83 119 C 83 84, 102 62, 130 62 C 158 62, 177 84, 177 119 L 179 166 C 180 211, 159 238, 130 238 C 101 238, 80 211, 81 166 Z" className="face" />
+        <path d="M 94 122 C 96 88, 111 70, 130 70 C 149 70, 164 88, 166 122" className="faceWarmth" />
+        <path d="M 99 219 C 110 232, 150 232, 161 219 C 154 240, 106 240, 99 219 Z" className="jawShade" />
 
         <path
           d={leftSidePath}
@@ -197,6 +205,11 @@ export function HairRenderer({ state, size = "large", label }: HairRendererProps
           className="hairCap"
           fill={`url(#${hairGradientId})`}
         />
+        <path
+          d={`M ${capLeft + 20} ${capTop + 19} C 108 ${capTop + 6}, 141 ${capTop + 6}, ${capRight - 20} ${capTop + 22}`}
+          className="hairHighlight"
+          stroke={`url(#${highlightGradientId})`}
+        />
         {flyaways}
         {hasParting ? (
           <g className="bangsLayer">
@@ -207,18 +220,18 @@ export function HairRenderer({ state, size = "large", label }: HairRendererProps
           <path d={bangsPath} className="bangsShape" />
         )}
         <path d={necklinePath} className="neckline" />
-        {hasParting ? <path d={`M ${partX} ${capTop + 8} C ${partX - 3} ${capTop + 35}, ${partX + 2} 96, ${partX} ${bangsBottom - 12}`} className="partingLine" /> : null}
+        {hasParting ? <path d={`M ${partX} ${capTop + 8} C ${partX - 3} ${capTop + 35}, ${partX + 2} 98, ${partX} ${bangsBottom - 12}`} className="partingLine" /> : null}
         {textureStrokes}
         {bangCuts}
 
-        <ellipse cx="109" cy="160" rx="4.4" ry="5.3" className="eye" />
-        <ellipse cx="151" cy="160" rx="4.4" ry="5.3" className="eye" />
-        <circle cx="110.5" cy="158" r="1.2" className="eyeLight" />
-        <circle cx="152.5" cy="158" r="1.2" className="eyeLight" />
-        <path d="M 129 166 C 125 179, 126 186, 136 187" className="nose" />
-        <path d="M 112 203 C 122 211, 141 211, 152 203" className="mouth" />
-        <path d="M 93 146 C 103 140, 115 140, 122 146" className="brow" />
-        <path d="M 138 146 C 146 140, 158 140, 169 146" className="brow" />
+        <ellipse cx="109" cy="160" rx="6.4" ry="7.3" className="eye" />
+        <ellipse cx="151" cy="160" rx="6.4" ry="7.3" className="eye" />
+        <circle cx="111.5" cy="157.8" r="1.9" className="eyeLight" />
+        <circle cx="153.5" cy="157.8" r="1.9" className="eyeLight" />
+        <path d="M 130 168 C 126 179, 127 186, 136 186" className="nose" />
+        <path d="M 113 203 C 123 211, 140 211, 151 203" className="mouth" />
+        <path d="M 93 146 C 103 139, 115 139, 123 145" className="brow" />
+        <path d="M 137 145 C 145 139, 157 139, 168 146" className="brow" />
       </svg>
     </div>
   );
