@@ -79,10 +79,28 @@ describe("stage history review", () => {
     expect(second.afterState.bangsLength).toBe(5);
   });
 
+  it("can resolve step zero as the initial hair state", () => {
+    const first = makeHistoryItem("first", "第一步：两侧剪短", { ...initialHairState, sideLength: 5 }, 1);
+
+    const view = resolveStageReviewView(first.afterState, [first], 0);
+
+    expect(view.stepNumber).toBe(0);
+    expect(view.item).toBeNull();
+    expect(view.isInitialStep).toBe(true);
+    expect(view.hairState).toEqual(initialHairState);
+  });
+
   it("moves through history with previous and next arrows", () => {
+    expect(getPreviousStageReviewStep(null, 1)).toBe(0);
+    expect(getPreviousStageReviewStep(1, 1)).toBe(0);
+    expect(getPreviousStageReviewStep(0, 1)).toBe(0);
+    expect(getNextStageReviewStep(0, 1)).toBeNull();
+
     expect(getPreviousStageReviewStep(null, 3)).toBe(2);
     expect(getPreviousStageReviewStep(2, 3)).toBe(1);
-    expect(getPreviousStageReviewStep(1, 3)).toBe(1);
+    expect(getPreviousStageReviewStep(1, 3)).toBe(0);
+    expect(getPreviousStageReviewStep(0, 3)).toBe(0);
+    expect(getNextStageReviewStep(0, 3)).toBe(1);
     expect(getNextStageReviewStep(1, 3)).toBe(2);
     expect(getNextStageReviewStep(2, 3)).toBeNull();
     expect(getNextStageReviewStep(null, 3)).toBeNull();
