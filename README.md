@@ -2,6 +2,15 @@
 
 Prompt Barber 是一个基于 prompt 的理发沟通游戏 MVP。玩家看到当前发型和目标参考发型，不能直接点击剪发按钮，只能用自然语言描述理发需求。系统会把描述解析成结构化发型操作，修改 SVG 发型，并根据目标参数评分。
 
+## 截图
+
+![Prompt Barber 主游戏界面](docs/screenshots/dashboard-clean-short.png)
+
+<p>
+  <img src="docs/screenshots/level-low-fade.png" alt="低渐变碎盖关卡" width="49%" />
+  <img src="docs/screenshots/level-middle-part.png" alt="韩式中分关卡" width="49%" />
+</p>
+
 ## 核心玩法
 
 每一关都有一个目标发型。玩家通过中文 prompt 指挥理发师，例如：
