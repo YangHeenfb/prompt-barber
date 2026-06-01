@@ -1,7 +1,7 @@
 import { HairRenderer } from "./HairRenderer";
 import { ScorePanel } from "./ScorePanel";
 import type { HairState, LevelConfig, PromptHistoryItem, ScoreBreakdown } from "@/lib/hair/types";
-import { fieldLabels, formatSeconds, formatValue } from "@/lib/hair/format";
+import { formatSeconds } from "@/lib/hair/format";
 
 export type StageHistoryEntry = {
   item: PromptHistoryItem;
@@ -87,12 +87,10 @@ type GameStageProps = {
   history: PromptHistoryItem[];
   selectedHistoryStep: number | null;
   scores: ScoreBreakdown;
-  debugVisible: boolean;
   canGoNext: boolean;
   onSelectHistoryStep: (step: number | null) => void;
   onReset: () => void;
   onNext: () => void;
-  onToggleDebug: () => void;
 };
 
 export function GameStage({
@@ -101,12 +99,10 @@ export function GameStage({
   history,
   selectedHistoryStep,
   scores,
-  debugVisible,
   canGoNext,
   onSelectHistoryStep,
   onReset,
-  onNext,
-  onToggleDebug
+  onNext
 }: GameStageProps) {
   const reviewView = resolveStageReviewView(currentHairState, history, selectedHistoryStep);
   const previousStep = getPreviousStageReviewStep(selectedHistoryStep, history.length);
@@ -186,22 +182,6 @@ export function GameStage({
       </div>
 
       <ScorePanel scores={scores} threshold={level.passAccuracyThreshold} />
-
-      <button type="button" className="debugToggle" onClick={onToggleDebug}>
-        {debugVisible ? "隐藏参数" : "显示参数"}
-      </button>
-
-      {debugVisible ? (
-        <div className="debugTable">
-          {(Object.keys(currentHairState) as Array<keyof HairState>).map((field) => (
-            <div key={field}>
-              <span>{fieldLabels[field]}</span>
-              <strong>{formatValue(field, currentHairState[field])}</strong>
-              <small>目标 {formatValue(field, level.target[field])}</small>
-            </div>
-          ))}
-        </div>
-      ) : null}
     </section>
   );
 }

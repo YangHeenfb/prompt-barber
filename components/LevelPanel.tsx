@@ -32,9 +32,7 @@ export function LevelPanel({ levels, currentIndex, onSelectLevel }: LevelPanelPr
       <div className="targetCard">
         <HairRenderer state={level.target} size="small" label="目标参考" />
         <div>
-          <p className="eyebrow">目标</p>
           <h3>参考发型</h3>
-          <p>{level.goal}</p>
         </div>
       </div>
 

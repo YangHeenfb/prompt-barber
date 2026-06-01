@@ -192,7 +192,6 @@ main {
 .levelButton,
 .primaryButton,
 .secondaryButton,
-.debugToggle,
 .hintChips button {
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -205,7 +204,6 @@ main {
 .levelButton:hover,
 .primaryButton:hover,
 .secondaryButton:hover,
-.debugToggle:hover,
 .hintChips button:hover {
   transform: translateY(-1px);
   border-color: var(--accent);
@@ -257,7 +255,6 @@ main {
 }
 
 .ruleBox div,
-.debugTable div,
 .scoreGrid div {
   padding: 12px;
   border-radius: 18px;
@@ -266,16 +263,14 @@ main {
 }
 
 .metricLabel,
-.scoreGrid span,
-.debugTable span {
+.scoreGrid span {
   display: block;
   color: var(--muted);
   font-size: 12px;
 }
 
 .ruleBox strong,
-.scoreGrid strong,
-.debugTable strong {
+.scoreGrid strong {
   display: block;
   margin-top: 4px;
   font-size: 20px;
@@ -597,21 +592,8 @@ main {
   gap: 10px;
 }
 
-.scoreGrid small,
-.debugTable small {
+.scoreGrid small {
   color: var(--muted);
-}
-
-.debugToggle {
-  width: 100%;
-  margin-top: 14px;
-}
-
-.debugTable {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-top: 12px;
 }
 
 @media (min-width: 1181px) {
@@ -669,7 +651,6 @@ main {
   }
 
   .ruleBox div,
-  .debugTable div,
   .scoreGrid div {
     padding: 10px 12px;
     border-radius: 15px;
@@ -679,14 +660,9 @@ main {
     gap: 8px;
   }
 
-  .debugToggle {
-    margin-top: 10px;
-  }
-
   .levelButton,
   .primaryButton,
   .secondaryButton,
-  .debugToggle,
   .hintChips button {
     padding: 10px 13px;
   }
@@ -904,8 +880,7 @@ blockquote {
 
   .targetCard,
   .ruleBox,
-  .scoreGrid,
-  .debugTable {
+  .scoreGrid {
     grid-template-columns: 1fr;
   }
 

@@ -142,7 +142,6 @@ export default function Home() {
           history={state.history}
           selectedHistoryStep={selectedHistoryStep}
           scores={state.latestScores}
-          debugVisible={state.debugVisible}
           canGoNext={canGoNext}
           onSelectHistoryStep={setSelectedHistoryStep}
           onReset={() => {
@@ -153,7 +152,6 @@ export default function Home() {
             setSelectedHistoryStep(null);
             dispatch({ type: "nextLevel", now: Date.now() });
           }}
-          onToggleDebug={() => dispatch({ type: "toggleDebug" })}
         />
 
         <div className="rightStack">
