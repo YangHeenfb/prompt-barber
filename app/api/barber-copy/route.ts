@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createBarberCopyFallback } from "@/lib/hair/barberCopyFallback";
 import type { BarberCopyRequestBody } from "@/lib/hair/barberCopyInput";
 import { barberCopyJsonSchema, safeParseBarberCopyResponse, validateBarberCopyResponse } from "@/lib/hair/barberCopySchema";
+import { generateStructuredJson } from "@/lib/llm/generateStructuredJson";
 
 export const runtime = "nodejs";
 
@@ -39,16 +40,6 @@ const systemInstruction = [
   "Return only the structured JSON object matching the schema."
 ].join(" ");
 
-function extractOutputText(response: unknown): string {
-  const candidate = response as { output_text?: string; output?: Array<{ content?: Array<{ text?: string; type?: string }> }> };
-  if (typeof candidate.output_text === "string") return candidate.output_text;
-  const firstText = candidate.output
-    ?.flatMap((item) => item.content ?? [])
-    .map((content) => content.text)
-    .find((text) => typeof text === "string");
-  return firstText ?? "";
-}
-
 function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
@@ -77,38 +68,16 @@ function isValidRequestBody(value: unknown): value is BarberCopyRequestBody {
   );
 }
 
-async function generateWithOpenAI(input: BarberCopyRequestBody) {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("未设置 OPENAI_API_KEY。");
-  }
+async function generateWithConfiguredApi(input: BarberCopyRequestBody) {
+  const result = await generateStructuredJson({
+    task: "barberCopy",
+    schemaName: "barber_copy",
+    schema: barberCopyJsonSchema,
+    systemInstruction,
+    userPayload: input
+  });
 
-  const { default: OpenAI } = await import("openai");
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const model = process.env.OPENAI_BARBER_COPY_MODEL || process.env.OPENAI_MODEL || "gpt-5.4-mini";
-
-  const response = await client.responses.create({
-    model,
-    input: [
-      {
-        role: "system",
-        content: systemInstruction
-      },
-      {
-        role: "user",
-        content: JSON.stringify(input, null, 2)
-      }
-    ],
-    text: {
-      format: {
-        type: "json_schema",
-        name: "barber_copy",
-        strict: true,
-        schema: barberCopyJsonSchema
-      }
-    }
-  } as never);
-
-  const parsed = safeParseBarberCopyResponse(extractOutputText(response));
+  const parsed = safeParseBarberCopyResponse(result.text);
   if (!parsed || !validateBarberCopyResponse(parsed)) {
     throw new Error("API 返回文案未通过校验。");
   }
@@ -129,7 +98,7 @@ export async function POST(request: Request) {
 
   const fallback = createBarberCopyFallback({ ...body, stepIndex: 0 });
   try {
-    const copy = await generateWithOpenAI(body);
+    const copy = await generateWithConfiguredApi(body);
     return NextResponse.json({ ok: true, copy });
   } catch (error) {
     const reason = error instanceof Error ? error.message : "理发师文案生成失败。";

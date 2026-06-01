@@ -49,6 +49,7 @@ lib/hair/barberCopyInput.ts           把结构化结果转换成文案事实
 lib/hair/barberCopyFallback.ts        本地确定性理发师文案 fallback
 lib/hair/barberCopySchema.ts          理发师反馈结构化输出 schema
 lib/hair/gameReducer.ts               游戏状态 reducer
+lib/llm                              服务端 LLM provider 配置与适配器
 tests                                纯函数测试
 ```
 
@@ -86,7 +87,7 @@ npm run lint
 
 ## LLM 解析
 
-游戏的自然语言理解全部由 LLM 完成，不再使用本地规则解析器猜测玩家意图。自动模式会先尝试调用本机 Codex CLI，再尝试 OpenAI API；如果两者都不可用，本次 prompt 不会执行理发操作。
+游戏的自然语言理解全部由 LLM 完成，不再使用本地规则解析器猜测玩家意图。自动模式会先尝试调用本机 Codex CLI，再尝试服务端配置的 API provider；如果两者都不可用，本次 prompt 不会执行理发操作。
 
 为保证玩法公平，解析 LLM 只会收到通用游戏背景、可操作的发型字段说明和玩家输入的修剪指令。它不会收到关卡名、目标发型参数、当前发型参数、通关阈值、评分规则或禁忌规则；这些信息只在游戏状态、执行约束和评分环节使用。
 
@@ -114,7 +115,7 @@ CODEX_CLI_TIMEOUT_MS=30000
 CODEX_CLI_DISABLED=1
 ```
 
-如需开启 API 解析，在项目根目录创建 `.env.local`：
+如需开启 API 解析，在项目根目录创建 `.env.local`。默认仍兼容原来的 OpenAI 配置：
 
 ```bash
 OPENAI_API_KEY=你的_key
@@ -122,7 +123,28 @@ OPENAI_MODEL=gpt-5.4-mini
 OPENAI_BARBER_COPY_MODEL=gpt-5.4-mini
 ```
 
-注意：不要把 API key 写成 `NEXT_PUBLIC_OPENAI_API_KEY`。带 `NEXT_PUBLIC_` 前缀的环境变量会暴露到浏览器端，这个项目只允许在服务端 route handler 里读取 API key。
+也可以使用新的通用 provider 配置：
+
+```bash
+PROMPT_BARBER_LLM_PROVIDER=openai-responses
+PROMPT_BARBER_LLM_API_KEY=你的_key
+PROMPT_BARBER_LLM_MODEL=gpt-5.4-mini
+PROMPT_BARBER_PARSE_MODEL=gpt-5.4-mini
+PROMPT_BARBER_BARBER_COPY_MODEL=gpt-5.4-mini
+```
+
+如果使用 OpenRouter、DeepSeek、Groq、Together 或自建 OpenAI-compatible 网关：
+
+```bash
+PROMPT_BARBER_LLM_PROVIDER=openai-compatible
+PROMPT_BARBER_LLM_BASE_URL=https://openrouter.ai/api/v1
+PROMPT_BARBER_LLM_API_KEY=你的_key
+PROMPT_BARBER_LLM_MODEL=你的模型名
+```
+
+`PROMPT_BARBER_PARSE_MODEL` 和 `PROMPT_BARBER_BARBER_COPY_MODEL` 可以分别覆盖剪发理解和托尼反馈文案的模型。未设置时会回退到 `PROMPT_BARBER_LLM_MODEL`，再回退到旧的 `OPENAI_MODEL` / `OPENAI_BARBER_COPY_MODEL`。
+
+注意：不要把 API key 写成 `NEXT_PUBLIC_*`。带 `NEXT_PUBLIC_` 前缀的环境变量会暴露到浏览器端，这个项目只允许在服务端 route handler 里读取 API key。
 
 如果 Codex CLI 或 API 解析失败，前端会显示错误提示并保持当前发型不变，不会回退到本地规则。
 
@@ -130,19 +152,11 @@ OPENAI_BARBER_COPY_MODEL=gpt-5.4-mini
 
 玩家可见的“理发师理解”只展示一个短标题和一段自然中文反馈，不展示 parser、模型、耗时、字段名、参数值或操作列表。
 
-`app/api/barber-copy/route.ts` 会把已经执行过的结构化结果转换成安全的人类可读事实，再调用 OpenAI Responses API 生成展示文案。这个 LLM 只负责表达，不决定理发操作，不修改 `HairState`，不参与评分。
+`app/api/barber-copy/route.ts` 会把已经执行过的结构化结果转换成安全的人类可读事实，再调用服务端配置的 LLM provider 生成展示文案。这个 LLM 只负责表达，不决定理发操作，不修改 `HairState`，不参与评分。
 
 文案输入会包含玩家最新原话、最近 1-3 轮简短上下文、可展示的理发事实和轻量 `interactionGuidance`。这样类似“再短一点”“不是这个意思”“你剪太少了”这类跟进句会被当作对话回应处理，而不是只机械复述操作事实。
 
-如果未设置 `OPENAI_API_KEY`，或文案 API 失败，前端会使用 `lib/hair/barberCopyFallback.ts` 的本地确定性 fallback。玩法逻辑和评分不受影响。
-
-文案模型选择顺序：
-
-```text
-OPENAI_BARBER_COPY_MODEL
-OPENAI_MODEL
-gpt-5.4-mini
-```
+如果未设置 API key，或文案 API 失败，前端会使用 `lib/hair/barberCopyFallback.ts` 的本地确定性 fallback。玩法逻辑和评分不受影响。
 
 ## 评分公式
 

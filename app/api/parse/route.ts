@@ -5,6 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { hairIntentJsonSchema, safeParseHairIntent, validateHairIntent } from "@/lib/hair/schema";
 import type { HairIntent, ParserMode } from "@/lib/hair/types";
+import { generateStructuredJson } from "@/lib/llm/generateStructuredJson";
+import { extractJsonObjectText } from "@/lib/llm/json";
 
 export const runtime = "nodejs";
 
@@ -21,32 +23,8 @@ const defaultCodexCliModel = "gpt-5.4";
 const defaultCodexReasoningEffort = "low";
 const defaultCodexServiceTier = "priority";
 
-function extractOutputText(response: unknown): string {
-  const candidate = response as { output_text?: string; output?: Array<{ content?: Array<{ text?: string; type?: string }> }> };
-  if (typeof candidate.output_text === "string") return candidate.output_text;
-  const firstText = candidate.output
-    ?.flatMap((item) => item.content ?? [])
-    .map((content) => content.text)
-    .find((text) => typeof text === "string");
-  return firstText ?? "";
-}
-
-function parseIntentFromText(text: string): HairIntent | null {
-  const direct = safeParseHairIntent(text.trim());
-  if (direct) return direct;
-
-  const withoutFence = text
-    .trim()
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/i, "");
-  const unfenced = safeParseHairIntent(withoutFence);
-  if (unfenced) return unfenced;
-
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-  if (start === -1 || end <= start) return null;
-  return safeParseHairIntent(text.slice(start, end + 1));
-}
+const parserSystemInstruction =
+  "You are a haircut instruction parser for the game Prompt Barber. Convert player language into structured hairstyle operations. Use only this generic game background and the player's instruction; do not infer any concrete goal or state from outside context. Do not invent fields outside the schema. Hairstyle fields are topLength, sideLength, bangsLength, fadeHeight, volume, texture, sideburns, parting, and neckline. The player may give a holistic style goal instead of explicit region-by-region instructions. Infer reasonable conservative operations only from the player's instruction. For example, requests like '帮我剪成短发', '剪清爽一点', or '修精神点' should produce conservative multi-field haircut operations, not a refusal just because no exact region was named. Keep operations conservative. Do not ask follow-up questions; execute the safest reasonable interpretation. Respect irreversibility: topLength, sideLength, bangsLength, and sideburns cannot grow back during an attempt; if the player asks for longer hair, add a warning and do not output operations that increase these length fields. If the user is ambiguous, return ambiguities and lower confidence. Return empty operations only when the player clearly is not making a haircut request or explicitly asks only for confirmation/no cutting. Output only the structured object. Use concise Simplified Chinese in notes, warnings, ambiguities, and reasons.";
 
 async function pathExists(path: string): Promise<boolean> {
   try {
@@ -170,7 +148,7 @@ async function parseWithCodexCli(prompt: string): Promise<HairIntent> {
 
     await runCodexCli(command, args, cliPrompt, workDir);
     const outputText = await readFile(outputPath, "utf8");
-    const parsed = parseIntentFromText(outputText);
+    const parsed = safeParseHairIntent(extractJsonObjectText(outputText));
     if (!parsed || !validateHairIntent(parsed)) {
       throw new Error("Codex CLI 返回格式未通过校验。");
     }
@@ -180,40 +158,16 @@ async function parseWithCodexCli(prompt: string): Promise<HairIntent> {
   }
 }
 
-async function parseWithOpenAI(prompt: string): Promise<HairIntent> {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("未设置 OPENAI_API_KEY。");
-  }
+async function parseWithConfiguredApi(prompt: string): Promise<HairIntent> {
+  const result = await generateStructuredJson({
+    task: "parse",
+    schemaName: "hair_intent",
+    schema: hairIntentJsonSchema,
+    systemInstruction: parserSystemInstruction,
+    userPayload: { prompt }
+  });
 
-  const { default: OpenAI } = await import("openai");
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const model = process.env.OPENAI_MODEL || "gpt-5.4-mini";
-
-  const response = await client.responses.create({
-    model,
-    input: [
-      {
-        role: "system",
-        content:
-          "You are a haircut instruction parser for the game Prompt Barber. Convert player language into structured hairstyle operations. Use only this generic game background and the player's instruction; do not infer any concrete goal or state from outside context. Do not invent fields outside the schema. Hairstyle fields are topLength, sideLength, bangsLength, fadeHeight, volume, texture, sideburns, parting, and neckline. The player may give a holistic style goal instead of explicit region-by-region instructions. Infer reasonable conservative operations only from the player's instruction. For example, requests like '帮我剪成短发', '剪清爽一点', or '修精神点' should produce conservative multi-field haircut operations, not a refusal just because no exact region was named. Keep operations conservative. Do not ask follow-up questions; execute the safest reasonable interpretation. Respect irreversibility: topLength, sideLength, bangsLength, and sideburns cannot grow back during an attempt; if the player asks for longer hair, add a warning and do not output operations that increase these length fields. If the user is ambiguous, return ambiguities and lower confidence. Return empty operations only when the player clearly is not making a haircut request or explicitly asks only for confirmation/no cutting. Output only the structured object. Use concise Simplified Chinese in notes, warnings, ambiguities, and reasons."
-      },
-      {
-        role: "user",
-        content: JSON.stringify({ prompt })
-      }
-    ],
-    text: {
-      format: {
-        type: "json_schema",
-        name: "hair_intent",
-        strict: true,
-        schema: hairIntentJsonSchema
-      }
-    }
-  } as never);
-
-  const outputText = extractOutputText(response);
-  const parsed = safeParseHairIntent(outputText);
+  const parsed = safeParseHairIntent(result.text);
   if (!parsed || !validateHairIntent(parsed)) {
     throw new Error("API 返回格式未通过校验。");
   }
@@ -224,7 +178,7 @@ function shouldTryCodex(mode: ParserMode): boolean {
   return mode === "auto" || mode === "codex";
 }
 
-function shouldTryOpenAI(mode: ParserMode): boolean {
+function shouldTryApi(mode: ParserMode): boolean {
   return mode === "auto" || mode === "ai";
 }
 
@@ -258,9 +212,9 @@ export async function POST(request: Request) {
     }
   }
 
-  if (shouldTryOpenAI(mode)) {
+  if (shouldTryApi(mode)) {
     try {
-      const intent = await parseWithOpenAI(prompt);
+      const intent = await parseWithConfiguredApi(prompt);
       return NextResponse.json({ ok: true, source: "ai" satisfies ParserSource, intent });
     } catch (error) {
       errors.push(error instanceof Error ? `API 解析失败：${error.message}` : "API 解析失败。");
