@@ -31,7 +31,7 @@ export const barberCopyJsonSchema = {
 const emotions = new Set<BarberCopyEmotion>(["calm", "careful", "playful", "warning", "confirming", "reassuring"]);
 const forbiddenCopyPatterns = [
   /\b(?:topLength|sideLength|bangsLength|fadeHeight|volume|texture|sideburns|parting|neckline)\b/,
-  /(?:parser|codex|openai|model|json|debug|confidence|latency|api)/i,
+  /(?:parser|codex|openai|model|json|debug|confidence|latency|api|provider|parameters?)/i,
   /(?:解析|模型|置信|延迟|调试|参数|字段)/,
   /\d/
 ];

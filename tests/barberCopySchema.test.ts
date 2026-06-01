@@ -26,10 +26,28 @@ describe("barberCopySchema", () => {
     })).toBe(false);
   });
 
+  it("rejects model, debug, API, JSON, and parameter language", () => {
+    const forbiddenTexts = [
+      "模型已经输出结果，托尼照做。",
+      "debug 信息已经记录。",
+      "API 返回正常，继续剪。",
+      "JSON 内容已经校验。",
+      "parameter 已经生效。"
+    ];
+
+    for (const spokenText of forbiddenTexts) {
+      expect(validateBarberCopyResponse({
+        title: "镜前确认",
+        spokenText,
+        emotion: "careful"
+      })).toBe(false);
+    }
+  });
+
   it("parses only valid structured JSON", () => {
     expect(safeParseBarberCopyResponse(JSON.stringify({
       title: "剪刀先放下",
-      spokenText: "剪刀先不动，现在还没下刀；我先把意思核清楚，等你点头再动。",
+      spokenText: "剪刀先上保险，现在还没下刀；我先把意思听明白，等你点头再动。",
       emotion: "confirming"
     }))).not.toBeNull();
     expect(safeParseBarberCopyResponse("not json")).toBeNull();

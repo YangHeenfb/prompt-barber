@@ -99,7 +99,8 @@ describe("createBarberCopyFallback", () => {
       intent: { ...baseIntent, countsAsOperationStep: false },
       appliedOperations: []
     }));
-    expect(copy.spokenText).toContain("剪刀先不动");
+    expect(copy.spokenText).toContain("剪刀先");
+    expect(copy.spokenText).toContain("还没下刀");
   });
 
   it("is deterministic for same input", () => {
@@ -119,21 +120,23 @@ describe("createBarberCopyFallback", () => {
 
   it("responds to complaint about too little cutting before listing facts", () => {
     const copy = createBarberCopyFallback(input({
-      prompt: "我说你剪太少了，听不懂吗",
+      prompt: "剪太少了，再明显一点",
       appliedOperations: [operation("topLength", 8, 7), operation("sideLength", 6, 5), operation("bangsLength", 7, 6)]
     }));
     expect(copy.emotion).toBe("reassuring");
     expect(copy.spokenText).toContain("听到了");
-    expect(copy.spokenText).toContain("太保守");
+    expect(copy.spokenText).toContain("太斯文");
+    expect(copy.spokenText).toContain("明确");
     expect(copy.spokenText).not.toContain("顶部有收短，两侧有收短，刘海有收短");
   });
 
-  it("acknowledges explicit constraints naturally", () => {
+  it("acknowledges do-not-cut-straight and other-areas-unchanged constraints", () => {
     const copy = createBarberCopyFallback(input({
-      prompt: "刘海剪短一点，但不要剪太齐",
+      prompt: "不要剪太齐，其他不动",
       appliedOperations: [operation("bangsLength", 7, 6)]
     }));
-    expect(copy.spokenText).toContain("不");
-    expect(copy.spokenText).toContain("齐线");
+    expect(copy.spokenText).toContain("不剪成一条直线");
+    expect(copy.spokenText).toContain("其他地方");
+    expect(copy.spokenText).toContain("不乱加戏");
   });
 });
